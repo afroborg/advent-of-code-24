@@ -3,3 +3,6 @@ create day:
 
 run day:
     @DAY=$(printf "%02d" {{day}}) && gleam run -m day${DAY}
+
+test:
+    gleam test
