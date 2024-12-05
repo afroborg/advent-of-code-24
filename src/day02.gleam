@@ -12,19 +12,18 @@ pub fn main() {
 }
 
 fn process(input: String) -> List(List(Int)) {
+  let numbers = fn(x) {
+    string.split(x, " ") |> list.map(int.parse) |> result.values()
+  }
+
   input
   |> string.split("\n")
-  |> list.map(fn(x) {
-    string.split(x, " ")
-    |> list.map(int.parse)
-    |> result.values()
-  })
+  |> list.map(numbers)
 }
 
 fn is_safe(l: List(Int)) -> Bool {
   let distances =
-    l
-    |> list.window_by_2()
+    list.window_by_2(l)
     |> list.map(fn(x) {
       let #(a, b) = x
       a - b
@@ -39,8 +38,7 @@ fn is_safe(l: List(Int)) -> Bool {
 }
 
 fn subsets(l: List(Int)) -> List(List(Int)) {
-  l
-  |> list.combinations(list.length(l) - 1)
+  list.combinations(l, list.length(l) - 1)
 }
 
 pub fn part1(input: String) -> String {
@@ -52,11 +50,7 @@ pub fn part1(input: String) -> String {
 
 pub fn part2(input: String) -> String {
   process(input)
-  |> list.filter(fn(x) {
-    x
-    |> subsets
-    |> list.any(is_safe)
-  })
+  |> list.filter(fn(x) { subsets(x) |> list.any(is_safe) })
   |> list.length()
   |> int.to_string()
 }

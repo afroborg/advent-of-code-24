@@ -15,7 +15,7 @@ pub fn day02_part_1_test() {
   |> should.equal("2")
 }
 
-pub fn dayxx_part_2_test() {
+pub fn day02_part_2_test() {
   let testinput =
     "7 6 4 2 1
 1 2 7 8 9

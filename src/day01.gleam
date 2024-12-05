@@ -16,13 +16,12 @@ fn process(input: String) -> #(List(Int), List(Int)) {
   let #(l1, l2) =
     input
     |> string.split("\n")
-    |> list.map(fn(l) { string.split_once(l, "   ") })
+    |> list.map(string.split_once(_, "   "))
     |> result.values()
     |> list.unzip()
 
   let sorted = fn(l) {
-    l
-    |> list.map(fn(s) { s |> int.parse() })
+    list.map(l, int.parse)
     |> result.values()
     |> list.sort(int.compare)
   }
@@ -45,10 +44,12 @@ pub fn part2(input: String) -> String {
   let #(l1, l2) = process(input)
 
   let map =
-    list.group(l2, by: function.identity)
+    l2
+    |> list.group(by: function.identity)
     |> dict.map_values(fn(_k, v) { list.length(v) })
 
-  list.map(l1, fn(x) {
+  l1
+  |> list.map(fn(x) {
     dict.get(map, x)
     |> result.unwrap(0)
     |> int.multiply(x)

@@ -6,10 +6,10 @@ pub fn main() {
   |> print.print(part1, part2)
 }
 
-pub fn part1(input: String) -> String {
+pub fn part1(_input: String) -> String {
   ""
 }
 
-pub fn part2(input: String) -> String {
+pub fn part2(_input: String) -> String {
   ""
 }

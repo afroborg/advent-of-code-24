@@ -34,6 +34,6 @@ pub fn part2(input: String) -> String {
   |> string.replace("\n", "")
   |> string.split("do()")
   |> list.map(regexp.replace(after_dont, _, ""))
-  |> string.join("do()")
+  |> string.join("")
   |> part1
 }
