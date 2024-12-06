@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/dict
 import gleam/int
 import gleam/option
@@ -33,54 +34,30 @@ pub fn main() {
   |> print.print(part1, part2)
 }
 
-fn process_map(
+fn build(
   input: String,
   lookup: Map,
   curr_pos: Position,
   guard: option.Option(Guard),
 ) {
   let insert = dict.insert(lookup, curr_pos, _)
+  let guard_dir = fn(dir) { option.Some(Guard(curr_pos, dir)) }
 
   case input {
-    "." <> r -> process_map(r, insert(None), step(curr_pos, Right), guard)
-    "#" <> r ->
-      process_map(r, insert(Obstruction), step(curr_pos, Right), guard)
-    "^" <> r ->
-      process_map(
-        r,
-        insert(None),
-        step(curr_pos, Right),
-        option.Some(Guard(curr_pos, Up)),
-      )
-    "v" <> r ->
-      process_map(
-        r,
-        insert(None),
-        step(curr_pos, Right),
-        option.Some(Guard(curr_pos, Down)),
-      )
-    "<" <> r ->
-      process_map(
-        r,
-        insert(None),
-        step(curr_pos, Right),
-        option.Some(Guard(curr_pos, Left)),
-      )
-    ">" <> r ->
-      process_map(
-        r,
-        insert(None),
-        step(curr_pos, Right),
-        option.Some(Guard(curr_pos, Right)),
-      )
-    "\n" <> r -> process_map(r, lookup, #(0, curr_pos.1 + 1), guard)
+    "." <> r -> build(r, insert(None), step(curr_pos, Right), guard)
+    "^" <> r -> build(r, insert(None), step(curr_pos, Right), guard_dir(Up))
+    "v" <> r -> build(r, insert(None), step(curr_pos, Right), guard_dir(Down))
+    "<" <> r -> build(r, insert(None), step(curr_pos, Right), guard_dir(Left))
+    ">" <> r -> build(r, insert(None), step(curr_pos, Right), guard_dir(Right))
+    "#" <> r -> build(r, insert(Obstruction), step(curr_pos, Right), guard)
+    "\n" <> r -> build(r, lookup, #(0, curr_pos.1 + 1), guard)
     _ -> #(lookup, guard)
   }
 }
 
-fn start_process_map(input: String) {
+fn start_build(input: String) {
   let assert #(lookup, option.Some(guard)) =
-    process_map(input, dict.new(), #(0, 0), option.None)
+    build(input, dict.new(), #(0, 0), option.None)
 
   #(lookup, guard)
 }
@@ -117,7 +94,7 @@ fn walk(guard: Guard, visited: set.Set(Position), lookup: Map) {
 
   lookup
   |> dict.get(next)
-  |> result.map(fn(p) { walk(next_guard_pos(guard, p), visited, lookup) })
+  |> result.map(fn(p) { next_guard_pos(guard, p) |> walk(visited, lookup) })
   |> result.unwrap(visited)
 }
 
@@ -126,30 +103,30 @@ fn start_walk(guard: Guard, lookup: Map) {
 }
 
 fn causes_loop(guard: Guard, visited: set.Set(Guard), lookup: Map) {
-  let already_visited = visited |> set.contains(guard)
-  case already_visited {
-    False -> {
-      let visited = visited |> set.insert(guard)
-      let next = step(guard.pos, guard.dir)
+  visited
+  |> set.contains(guard)
+  |> bool.guard(True, fn() {
+    let next = step(guard.pos, guard.dir)
+    let visited = visited |> set.insert(guard)
 
-      case lookup |> dict.get(next) {
-        Ok(p) -> causes_loop(next_guard_pos(guard, p), visited, lookup)
-        _ -> False
-      }
-    }
-    _ -> True
-  }
+    lookup
+    |> dict.get(next)
+    |> result.map(fn(p) {
+      next_guard_pos(guard, p) |> causes_loop(visited, lookup)
+    })
+    |> result.unwrap(False)
+  })
 }
 
 pub fn part1(input: String) -> String {
-  let #(lookup, guard) = start_process_map(input)
+  let #(lookup, guard) = start_build(input)
   let visited = start_walk(guard, lookup)
 
   visited |> set.size |> int.to_string
 }
 
 pub fn part2(input: String) -> String {
-  let #(lookup, guard) = start_process_map(input)
+  let #(lookup, guard) = start_build(input)
 
   // can't be at the same position as the guard
   start_walk(guard, lookup)
