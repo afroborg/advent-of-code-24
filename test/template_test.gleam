@@ -5,7 +5,7 @@ pub fn dayxx_part_1_test() {
   let testinput = ""
 
   testinput
-  |> template.part2
+  |> template.part1
   |> should.equal("")
 }
 
